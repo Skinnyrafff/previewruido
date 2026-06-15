@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { STORAGE_KEYS } from '../lib/constants'
 
 export default function Login({ onLogin }) {
   const [password, setPassword] = useState('')
@@ -12,7 +13,7 @@ export default function Login({ onLogin }) {
 
     setTimeout(() => {
       if (password === import.meta.env.VITE_APP_PASSWORD) {
-        localStorage.setItem('ruido_auth', 'true')
+        localStorage.setItem(STORAGE_KEYS.auth, 'true')
         onLogin()
       } else {
         setError(true)

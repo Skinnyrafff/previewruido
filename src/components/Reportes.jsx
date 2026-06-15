@@ -1,44 +1,8 @@
 import { useState, useEffect } from 'react'
 import sql from '../lib/db'
 import Modal from './Modal'
-
-const AV_COLORS = [
-  { bg: '#FDDADA', color: '#C0392B' },
-  { bg: '#E6EEFF', color: '#3B5BDB' },
-  { bg: '#E1F5EE', color: '#1D9E75' },
-  { bg: '#F3E8FF', color: '#7C3AED' },
-  { bg: '#FFF3CD', color: '#BA7517' },
-  { bg: '#FDE8F0', color: '#C2185B' },
-  { bg: '#D4F4FF', color: '#0369A1' },
-  { bg: '#E8F5E9', color: '#2E7D32' },
-]
-
-function fmtNum(n) {
-  n = Number(n) || 0
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
-
-function fmtSeg(n) {
-  n = Number(n)
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
-
-function Avatar({ nombre, index, size = 28 }) {
-  const c = AV_COLORS[index % AV_COLORS.length]
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: c.bg, color: c.color,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.38, fontWeight: 500, flexShrink: 0,
-      border: '0.5px solid rgba(0,0,0,0.06)',
-    }}>{nombre?.[0]?.toUpperCase()}</div>
-  )
-}
+import { fmtNum } from '../lib/format'
+import Avatar from './ui/Avatar'
 
 function MetricCard({ label, value, sub, icon }) {
   return (

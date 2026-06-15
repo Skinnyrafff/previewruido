@@ -1,44 +1,9 @@
 import { useState, useEffect } from 'react'
 import sql from '../lib/db'
-
-const AV_COLORS = [
-  { bg: '#FDDADA', color: '#C0392B' },
-  { bg: '#E6EEFF', color: '#3B5BDB' },
-  { bg: '#E1F5EE', color: '#1D9E75' },
-  { bg: '#F3E8FF', color: '#7C3AED' },
-  { bg: '#FFF3CD', color: '#BA7517' },
-  { bg: '#FDE8F0', color: '#C2185B' },
-  { bg: '#D4F4FF', color: '#0369A1' },
-  { bg: '#E8F5E9', color: '#2E7D32' },
-]
-
-function fmtSeg(n) {
-  n = Number(n)
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
-
-function fmtMoney(n, moneda) {
-  n = Math.round(Number(n))
-  if (moneda === 'USD') return '$' + n.toLocaleString('en-US')
-  return '$' + n.toLocaleString('es-CL')
-}
-
-function Avatar({ nombre, index, size = 32 }) {
-  const c = AV_COLORS[index % AV_COLORS.length]
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: c.bg, color: c.color,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.38, fontWeight: 500, flexShrink: 0,
-      border: '0.5px solid rgba(0,0,0,0.06)',
-    }}>
-      {nombre?.[0]?.toUpperCase()}
-    </div>
-  )
-}
+import { fmtSeg, fmtMoney } from '../lib/format'
+import Avatar from './ui/Avatar'
+import BudgetBar from './ui/BudgetBar'
+import PageHeader from './ui/PageHeader'
 
 function KPI({ label, value, sub, subColor }) {
   return (
@@ -57,50 +22,31 @@ function KPI({ label, value, sub, subColor }) {
   )
 }
 
-function BudgetBar({ usado, total, moneda }) {
-  const pct = total > 0 ? Math.min(100, Math.round((usado / total) * 100)) : 0
-  const barColor = pct >= 100 ? '#E24B4A' : pct >= 90 ? '#EF9F27' : '#639922'
-  const textColor = pct >= 100 ? '#A32D2D' : pct >= 90 ? '#854F0B' : '#3B6D11'
-  const bgColor = pct >= 100 ? '#FCEBEB' : pct >= 90 ? '#FAEEDA' : '#EAF3DE'
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-        <span style={{ fontSize: 11, background: bgColor, color: textColor, padding: '1px 7px', borderRadius: 20 }}>
-          {pct}% usado
-        </span>
-        <span style={{ fontSize: 11, color: '#AAA' }}>
-          {fmtMoney(usado, moneda)} / {fmtMoney(total, moneda)}
-        </span>
-      </div>
-      <div style={{ height: 4, background: '#F0F0EE', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: pct + '%', background: barColor, borderRadius: 2 }} />
-      </div>
-    </div>
-  )
+function formatTipoLabel(tipos) {
+  if (!tipos || tipos.length === 0) return ''
+  return Array.isArray(tipos) ? tipos.join(', ') : String(tipos)
 }
 
 export default function Dashboard({ onNavigate }) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => { fetchDashboard() }, [])
 
   async function fetchDashboard() {
     setLoading(true)
+    setError(null)
     try {
       const [infRows, campRows, ciRows] = await Promise.all([
         sql`
-          SELECT id, nombre, ig_seguidores, tt_seguidores, tipo_contenido, estado,
+          SELECT id, nombre, ig_seguidores, tt_seguidores, tipos_contenido, estado,
             (ig_seguidores + tt_seguidores) AS total_seguidores
           FROM influencers
           ORDER BY (ig_seguidores + tt_seguidores) DESC
         `,
-        sql`
-          SELECT * FROM campaigns ORDER BY created_at DESC
-        `,
-        sql`
-          SELECT campaign_id, influencer_id, costo FROM campaign_influencers
-        `,
+        sql`SELECT * FROM campaigns ORDER BY created_at DESC`,
+        sql`SELECT campaign_id, influencer_id, costo FROM campaign_influencers`,
       ])
 
       const now = new Date()
@@ -123,48 +69,30 @@ export default function Dashboard({ onNavigate }) {
       })
     } catch (e) {
       console.error(e)
+      setError('No se pudo cargar el dashboard. Verifica la conexión a la base de datos.')
     }
     setLoading(false)
   }
 
   if (loading) return <div style={{ padding: 40, color: '#AAA', fontSize: 13 }}>Cargando...</div>
+  if (error) return <div style={{ padding: 40, color: '#A32D2D', fontSize: 13 }}>{error}</div>
   if (!data) return null
 
   const campsMes = data.campaigns.filter(c => c.esMes)
   const topInfs = data.influencers.slice(0, 8)
-
   const mesNombre = new Date().toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
 
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page">
+      <PageHeader
+        title="Dashboard"
+        subtitle={new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+      />
 
-      {/* Header */}
-      <div style={{ marginBottom: 22 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 500 }}>Dashboard</h1>
-        <p style={{ fontSize: 12, color: '#AAA', marginTop: 2 }}>
-          {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </p>
-      </div>
-
-      {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-        <KPI
-          label="Influencers en roster"
-          value={data.influencers.length}
-          sub={`${data.activos} activos`}
-          subColor="#3B6D11"
-        />
-        <KPI
-          label="Campañas totales"
-          value={data.campaigns.length}
-          sub={`${campsMes.length} este mes`}
-          subColor="#0C447C"
-        />
-        <KPI
-          label="Alcance total roster"
-          value={fmtSeg(data.totalSeg)}
-          sub="seguidores acumulados"
-        />
+      <div className="kpi-grid" style={{ marginBottom: 24 }}>
+        <KPI label="Influencers en roster" value={data.influencers.length} sub={`${data.activos} activos`} subColor="#3B6D11" />
+        <KPI label="Campañas totales" value={data.campaigns.length} sub={`${campsMes.length} este mes`} subColor="#0C447C" />
+        <KPI label="Alcance total roster" value={fmtSeg(data.totalSeg)} sub="seguidores acumulados" />
         <KPI
           label="Presupuesto administrado"
           value={fmtMoney(data.campaigns.reduce((s, c) => s + Number(c.budget), 0), 'CLP')}
@@ -172,17 +100,11 @@ export default function Dashboard({ onNavigate }) {
         />
       </div>
 
-      {/* Dos columnas */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-        {/* Top influencers */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 13, fontWeight: 500 }}>Top influencers por seguidores</h2>
-            <span
-              style={{ fontSize: 12, color: '#E8313A', cursor: 'pointer' }}
-              onClick={() => onNavigate('roster')}
-            >
+            <span style={{ fontSize: 12, color: '#E8313A', cursor: 'pointer' }} onClick={() => onNavigate('roster')}>
               Ver roster →
             </span>
           </div>
@@ -206,7 +128,7 @@ export default function Dashboard({ onNavigate }) {
                   <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {inf.nombre}
                   </div>
-                  <div style={{ fontSize: 11, color: '#AAA' }}>{inf.tipo_contenido}</div>
+                  <div style={{ fontSize: 11, color: '#AAA' }}>{formatTipoLabel(inf.tipos_contenido)}</div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{fmtSeg(inf.total_seguidores)}</div>
@@ -219,14 +141,10 @@ export default function Dashboard({ onNavigate }) {
           </div>
         </div>
 
-        {/* Campañas del mes */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <h2 style={{ fontSize: 13, fontWeight: 500 }}>Campañas — {mesNombre}</h2>
-            <span
-              style={{ fontSize: 12, color: '#E8313A', cursor: 'pointer' }}
-              onClick={() => onNavigate('campanas')}
-            >
+            <span style={{ fontSize: 12, color: '#E8313A', cursor: 'pointer' }} onClick={() => onNavigate('campanas')}>
               Ver todas →
             </span>
           </div>
@@ -263,7 +181,6 @@ export default function Dashboard({ onNavigate }) {
             ))}
           </div>
         </div>
-
       </div>
     </div>
   )

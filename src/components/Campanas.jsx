@@ -3,109 +3,15 @@ import sql from '../lib/db'
 import Modal from './Modal'
 import SharePanel from './SharePanel'
 import Reportes from './Reportes'
-
-const TIPOS = ['Bailes', 'Reviewers', 'Humor', 'Lifestyle', 'Música', 'Gaming', 'Moda', 'Fitness', 'Viajes', 'Otros']
-
-const TIPO_COLORS = {
-  Bailes:    { bg: '#EEEDFE', color: '#3C3489' },
-  Reviewers: { bg: '#E6F1FB', color: '#0C447C' },
-  Humor:     { bg: '#FAEEDA', color: '#633806' },
-  Lifestyle: { bg: '#E1F5EE', color: '#085041' },
-  Música:    { bg: '#FAECE7', color: '#712B13' },
-  Gaming:    { bg: '#FBEAF0', color: '#72243E' },
-  Moda:      { bg: '#FEF0FB', color: '#6B1560' },
-  Fitness:   { bg: '#E8F5E9', color: '#1B5E20' },
-  Viajes:    { bg: '#E3F2FD', color: '#0D47A1' },
-  Otros:     { bg: '#F1EFE8', color: '#444441' },
-}
-
-const SIZE_RANGES = [
-  { label: 'Nano',  min: 0,       max: 10000 },
-  { label: 'Micro', min: 10000,   max: 150000 },
-  { label: 'Mid',   min: 150000,  max: 750000 },
-  { label: 'Macro', min: 750000,  max: 4000000 },
-  { label: 'Mega',  min: 4000000, max: Infinity },
-]
-
-function getSize(n) {
-  n = Number(n)
-  return SIZE_RANGES.find(r => n >= r.min && n < r.max) || SIZE_RANGES[0]
-}
-
-const ESTADOS_INF = ['Contactado', 'Negociando', 'Confirmado', 'Brief enviado', 'Contenido recibido', 'Publicado']
-
-const ESTADO_INF_COLORS = {
-  Contactado:           { bg: '#F1EFE8', color: '#5F5E5A' },
-  Negociando:           { bg: '#FAEEDA', color: '#633806' },
-  Confirmado:           { bg: '#E1F5EE', color: '#085041' },
-  'Brief enviado':      { bg: '#E6F1FB', color: '#0C447C' },
-  'Contenido recibido': { bg: '#EEEDFE', color: '#3C3489' },
-  Publicado:            { bg: '#EAF3DE', color: '#27500A' },
-}
-
-const ESTADO_CAMP_COLORS = {
-  Activa:    { bg: '#EAF3DE', color: '#27500A' },
-  Pausada:   { bg: '#FAEEDA', color: '#633806' },
-  Cerrada:   { bg: '#E6F1FB', color: '#0C447C' },
-  Cancelada: { bg: '#FCEBEB', color: '#791F1F' },
-}
-
-const AV_COLORS = [
-  { bg: '#FDDADA', color: '#C0392B' },
-  { bg: '#E6EEFF', color: '#3B5BDB' },
-  { bg: '#E1F5EE', color: '#1D9E75' },
-  { bg: '#F3E8FF', color: '#7C3AED' },
-  { bg: '#FFF3CD', color: '#BA7517' },
-  { bg: '#FDE8F0', color: '#C2185B' },
-  { bg: '#D4F4FF', color: '#0369A1' },
-  { bg: '#E8F5E9', color: '#2E7D32' },
-]
+import {
+  TIPOS, TIPO_COLORS, SIZE_RANGES, ESTADOS_INF, ESTADO_INF_COLORS, ESTADO_CAMP_COLORS, PLATAFORMAS,
+} from '../lib/constants'
+import { fmtSeg, fmtMoney, getSize } from '../lib/format'
+import Avatar from './ui/Avatar'
+import BudgetBar from './ui/BudgetBar'
 
 const TABS_LISTA = ['Activas', 'Pausadas', 'Cerradas', 'Canceladas', 'Todas']
 const TABS_DETALLE = ['influencers', 'reportes']
-const PLATAFORMAS = ['Ambas', 'TikTok', 'Instagram']
-
-function fmtSeg(n) {
-  n = Number(n)
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
-
-function fmtMoney(n, moneda) {
-  n = Math.round(Number(n))
-  if (moneda === 'USD') return '$' + n.toLocaleString('en-US')
-  return '$' + n.toLocaleString('es-CL')
-}
-
-function Avatar({ nombre, index, size = 30 }) {
-  const c = AV_COLORS[index % AV_COLORS.length]
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: c.bg, color: c.color,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.38, fontWeight: 500, flexShrink: 0,
-      border: '0.5px solid rgba(0,0,0,0.06)',
-    }}>{nombre?.[0]?.toUpperCase()}</div>
-  )
-}
-
-function BudgetBar({ usado, total }) {
-  const pct = total > 0 ? Math.min(100, Math.round((usado / total) * 100)) : 0
-  const color = pct >= 100 ? '#E24B4A' : pct >= 90 ? '#EF9F27' : '#639922'
-  return (
-    <div style={{ marginTop: 10 }}>
-      <div style={{ height: 4, background: '#F0F0EE', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: pct + '%', background: color, borderRadius: 2 }} />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3, fontSize: 10.5, color: '#AAA' }}>
-        <span style={{ color }}>{pct}%</span>
-        <span>{fmtMoney(total, 'CLP')}</span>
-      </div>
-    </div>
-  )
-}
 
 function BudgetSummary({ camp }) {
   const usado = camp.influencers?.reduce((s, i) => s + Number(i.costo), 0) || 0
@@ -830,7 +736,7 @@ export default function Campanas() {
                     <div style={{ fontSize: 15, fontWeight: 500 }}>{camp.moneda}</div>
                   </div>
                 </div>
-                <BudgetBar usado={usado} total={Number(camp.budget)} />
+                <BudgetBar usado={usado} total={Number(camp.budget)} moneda={camp.moneda} compact />
               </div>
             )
           })}

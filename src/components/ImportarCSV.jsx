@@ -1,28 +1,8 @@
 import { useState, useRef } from 'react'
 import sql from '../lib/db'
 import Modal from './Modal'
-
-const TIPOS_VALIDOS = ['Bailes', 'Reviewers', 'Humor', 'Lifestyle', 'Música', 'Gaming', 'Moda', 'Fitness', 'Viajes', 'Otros']
-
-const TIPO_COLORS = {
-  Bailes:    { bg: '#EEEDFE', color: '#3C3489' },
-  Reviewers: { bg: '#E6F1FB', color: '#0C447C' },
-  Humor:     { bg: '#FAEEDA', color: '#633806' },
-  Lifestyle: { bg: '#E1F5EE', color: '#085041' },
-  Música:    { bg: '#FAECE7', color: '#712B13' },
-  Gaming:    { bg: '#FBEAF0', color: '#72243E' },
-  Moda:      { bg: '#FEF0FB', color: '#6B1560' },
-  Fitness:   { bg: '#E8F5E9', color: '#1B5E20' },
-  Viajes:    { bg: '#E3F2FD', color: '#0D47A1' },
-  Otros:     { bg: '#F1EFE8', color: '#444441' },
-}
-
-function fmtSeg(n) {
-  n = Number(n)
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
+import { TIPOS, TIPO_COLORS } from '../lib/constants'
+import { fmtSeg } from '../lib/format'
 
 function parseCSV(text) {
   const lines = text.trim().split('\n')
@@ -86,7 +66,7 @@ function mapRow(row) {
     ? catRaw.split(',').map(c => {
         const trimmed = c.trim()
         // Buscar match case-insensitive
-        const match = TIPOS_VALIDOS.find(t => t.toLowerCase() === trimmed.toLowerCase())
+        const match = TIPOS.find(t => t.toLowerCase() === trimmed.toLowerCase())
         return match || 'Otros'
       }).filter((v, i, arr) => arr.indexOf(v) === i) // deduplicar
     : ['Otros']

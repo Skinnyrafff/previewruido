@@ -3,6 +3,8 @@ export default function Sidebar({ page, setPage, onLogout }) {
     { id: 'dashboard', label: 'Dashboard', icon: '◈' },
     { id: 'roster', label: 'Roster', icon: '◉' },
     { id: 'campanas', label: 'Campañas', icon: '◎' },
+    { id: 'scraper-tiktok', label: 'Scraper TikTok', icon: '⚡' },
+    { id: 'scraper-instagram', label: 'Scraper Instagram', icon: '📸' },
   ]
 
   return (

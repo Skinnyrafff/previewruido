@@ -1,62 +1,8 @@
 import { useState, useEffect } from 'react'
 import sql from '../lib/db'
-
-const TIPO_COLORS = {
-  Bailes:    { bg: '#EEEDFE', color: '#3C3489' },
-  Reviewers: { bg: '#E6F1FB', color: '#0C447C' },
-  Humor:     { bg: '#FAEEDA', color: '#633806' },
-  Lifestyle: { bg: '#E1F5EE', color: '#085041' },
-  Música:    { bg: '#FAECE7', color: '#712B13' },
-  Gaming:    { bg: '#FBEAF0', color: '#72243E' },
-  Moda:      { bg: '#FEF0FB', color: '#6B1560' },
-  Fitness:   { bg: '#E8F5E9', color: '#1B5E20' },
-  Viajes:    { bg: '#E3F2FD', color: '#0D47A1' },
-  Otros:     { bg: '#F1EFE8', color: '#444441' },
-}
-
-const SIZE_RANGES = [
-  { label: 'Nano',  min: 0,       max: 10000 },
-  { label: 'Micro', min: 10000,   max: 150000 },
-  { label: 'Mid',   min: 150000,  max: 750000 },
-  { label: 'Macro', min: 750000,  max: 4000000 },
-  { label: 'Mega',  min: 4000000, max: Infinity },
-]
-
-function getSize(n) {
-  n = Number(n)
-  return SIZE_RANGES.find(r => n >= r.min && n < r.max)?.label || 'Nano'
-}
-
-const AV_COLORS = [
-  { bg: '#FDDADA', color: '#C0392B' },
-  { bg: '#E6EEFF', color: '#3B5BDB' },
-  { bg: '#E1F5EE', color: '#1D9E75' },
-  { bg: '#F3E8FF', color: '#7C3AED' },
-  { bg: '#FFF3CD', color: '#BA7517' },
-  { bg: '#FDE8F0', color: '#C2185B' },
-  { bg: '#D4F4FF', color: '#0369A1' },
-  { bg: '#E8F5E9', color: '#2E7D32' },
-]
-
-function fmtSeg(n) {
-  n = Number(n)
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return Math.round(n / 1000) + 'K'
-  return n.toLocaleString('es-CL')
-}
-
-function Avatar({ nombre, index, size = 36 }) {
-  const c = AV_COLORS[index % AV_COLORS.length]
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%',
-      background: c.bg, color: c.color,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.38, fontWeight: 500, flexShrink: 0,
-      border: '0.5px solid rgba(0,0,0,0.06)',
-    }}>{nombre?.[0]?.toUpperCase()}</div>
-  )
-}
+import { TIPO_COLORS } from '../lib/constants'
+import { fmtSeg, getSizeLabel } from '../lib/format'
+import Avatar from './ui/Avatar'
 
 function ProfileLink({ username, link }) {
   if (!username) return <span style={{ color: '#CCC', fontSize: 13 }}>—</span>
@@ -201,8 +147,8 @@ export default function VistaCliente({ token }) {
               <tbody>
                 {camp.influencers.map((inf, i) => {
                   const tipos = inf.tipos_contenido || []
-                  const igSize = getSize(inf.ig_seguidores)
-                  const ttSize = getSize(inf.tt_seguidores)
+                  const igSize = getSizeLabel(inf.ig_seguidores)
+                  const ttSize = getSizeLabel(inf.tt_seguidores)
                   return (
                     <tr key={i} style={{ borderBottom: i < camp.influencers.length - 1 ? '0.5px solid #F0F0EE' : 'none' }}>
                       <td style={{ padding: '13px 16px', verticalAlign: 'middle' }}>

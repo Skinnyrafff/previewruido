@@ -6,10 +6,15 @@ import Roster from './components/Roster'
 import Campanas from './components/Campanas'
 import VistaCliente from './components/VistaCliente'
 import VistaReporte from './components/VistaReporte'
+import TikTokScraper from './components/TikTokScraper'
+import InstagramScraper from './components/InstagramScraper'
 import './index.css'
 
+import { STORAGE_KEYS } from './lib/constants'
+const isDev = import.meta.env.DEV
+
 export default function App() {
-  const [auth, setAuth] = useState(false)
+  const [auth, setAuth] = useState(isDev)
   const [page, setPage] = useState('dashboard')
   const [publicToken, setPublicToken] = useState(null)
   const [reportToken, setReportToken] = useState(null)
@@ -20,12 +25,13 @@ export default function App() {
     const report = params.get('report')
     if (token) { setPublicToken(token); return }
     if (report) { setReportToken(report); return }
-    const saved = localStorage.getItem('ruido_auth')
+    if (isDev) { setAuth(true); return }
+    const saved = localStorage.getItem(STORAGE_KEYS.auth)
     if (saved === 'true') setAuth(true)
   }, [])
 
   function handleLogout() {
-    localStorage.removeItem('ruido_auth')
+    localStorage.removeItem(STORAGE_KEYS.auth)
     setAuth(false)
   }
 
@@ -40,6 +46,8 @@ export default function App() {
         {page === 'dashboard' && <Dashboard onNavigate={setPage} />}
         {page === 'roster' && <Roster />}
         {page === 'campanas' && <Campanas />}
+        {page === 'scraper-tiktok' && <TikTokScraper />}
+        {page === 'scraper-instagram' && <InstagramScraper />}
       </main>
     </div>
   )

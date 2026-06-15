@@ -1,0 +1,262 @@
+import { useApifyScraper } from '../../hooks/useApifyScraper'
+import PageHeader from '../ui/PageHeader'
+import LogConsole from '../ui/LogConsole'
+import KpiCard from '../ui/KpiCard'
+import { downloadCsv } from '../../lib/csv'
+
+export default function ApifyScraperPage({ config }) {
+  const scraper = useApifyScraper(config)
+  const {
+    apifyToken,
+    showToken,
+    setShowToken,
+    limit,
+    setLimit,
+    campaigns,
+    roster,
+    selectedCampaignId,
+    setSelectedCampaignId,
+    selectedRosterProfiles,
+    saveToDb,
+    setSaveToDb,
+    manualProfiles,
+    setManualProfiles,
+    isScraping,
+    logs,
+    statusText,
+    results,
+    isSavingDb,
+    saveToken,
+    toggleRosterProfile,
+    selectAllRoster,
+    selectNoneRoster,
+    handleStartScrape,
+    handleSyncToDb,
+    addLog,
+    rosterUsernameField,
+  } = scraper
+
+  function downloadCSV() {
+    if (results.length === 0) return
+    const { headers, rows } = config.csvExport(results)
+    const filename = `${config.csvFilenamePrefix}_${new Date().toISOString().split('T')[0]}.csv`
+    downloadCsv(filename, headers, rows)
+    addLog('Archivo CSV descargado con éxito.')
+  }
+
+  return (
+    <div className="page">
+      <PageHeader title={config.title} subtitle={config.subtitle} />
+
+      {config.warningBanner && (
+        <div className="warning-banner">
+          <span>⚠️</span>
+          <span>{config.warningBanner}</span>
+        </div>
+      )}
+
+      <div className="scraper-grid">
+        <div className="scraper-sidebar">
+          <div className="card" style={{ padding: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Configuración de Apify</div>
+              <button className="btn-ghost" style={{ padding: '2px 8px', fontSize: 10.5 }} onClick={() => setShowToken(!showToken)}>
+                {showToken ? 'Ocultar' : 'Ver'}
+              </button>
+            </div>
+            <div className="fg" style={{ marginBottom: 10 }}>
+              <label className="label">API Token</label>
+              <input
+                className="input"
+                type={showToken ? 'text' : 'password'}
+                value={apifyToken}
+                onChange={e => saveToken(e.target.value)}
+                placeholder="apify_api_..."
+              />
+            </div>
+            <div className="fg" style={{ marginBottom: 0 }}>
+              <label className="label">{config.limitLabel}</label>
+              <input
+                className="input"
+                type="number"
+                value={limit}
+                onChange={e => setLimit(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                min="1"
+                max="50"
+              />
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 14 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 500, marginBottom: 10 }}>Destino de los Datos</div>
+            <div className="fg" style={{ marginBottom: 0 }}>
+              <label className="label">Campaña a sincronizar</label>
+              <select className="input" value={selectedCampaignId} onChange={e => setSelectedCampaignId(e.target.value)}>
+                <option value="">No guardar en Base de Datos (Solo reporte local)</option>
+                {campaigns.map(c => (
+                  <option key={c.id} value={c.id}>{c.nombre} ({c.cliente})</option>
+                ))}
+              </select>
+              {selectedCampaignId && (
+                <>
+                  <div className="success-pill">✓ Campaña seleccionada para vinculación.</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                    <input
+                      type="checkbox"
+                      id={config.saveCheckboxId}
+                      checked={saveToDb}
+                      onChange={e => setSaveToDb(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <label htmlFor={config.saveCheckboxId} style={{ fontSize: 12, color: '#333', cursor: 'pointer', userSelect: 'none' }}>
+                      Guardar resultados en la Base de Datos
+                    </label>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Perfiles de Roster ({roster.length})</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <span className="link-accent" onClick={selectAllRoster}>Todos</span>
+                <span style={{ fontSize: 11, color: '#AAA' }}>·</span>
+                <span style={{ fontSize: 11, color: '#666', cursor: 'pointer', userSelect: 'none' }} onClick={selectNoneRoster}>Ninguno</span>
+              </div>
+            </div>
+            <div className="roster-picker">
+              {roster.length === 0 ? (
+                <div style={{ padding: 10, fontSize: 11.5, color: '#AAA', textAlign: 'center' }}>{config.emptyRosterMessage}</div>
+              ) : roster.map(r => {
+                const username = r[rosterUsernameField]
+                const selected = selectedRosterProfiles.includes(username)
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => toggleRosterProfile(username)}
+                    className="roster-picker__item"
+                    style={{ background: selected ? '#FCEBEB' : 'transparent' }}
+                  >
+                    <div className="roster-picker__check" style={{
+                      borderColor: selected ? '#E8313A' : '#D0D0CC',
+                      background: selected ? '#E8313A' : 'transparent',
+                    }}>
+                      {selected ? '✓' : ''}
+                    </div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontWeight: 500 }}>{r.nombre}</span>
+                      <span style={{ color: '#888' }}> ({username})</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 14 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 500, marginBottom: 8 }}>{config.manualProfilesTitle}</div>
+            <div className="fg" style={{ marginBottom: 0 }}>
+              <label className="label">Agregar manualmente (uno por línea o por coma)</label>
+              <textarea
+                className="input"
+                rows={3}
+                value={manualProfiles}
+                onChange={e => setManualProfiles(e.target.value)}
+                placeholder={config.manualProfilesPlaceholder}
+                style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: 12 }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="scraper-main">
+          <div className="card" style={{ padding: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div>
+                <h3 style={{ fontSize: 14, fontWeight: 500 }}>Panel de Control</h3>
+                {isScraping && (
+                  <p style={{ fontSize: 12, color: '#E8313A', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span className="pulse-dot" />
+                    Scraper activo en Apify (Estado: <strong>{statusText}</strong>)
+                  </p>
+                )}
+              </div>
+              <button
+                className="btn-red"
+                onClick={handleStartScrape}
+                disabled={isScraping}
+                style={{ padding: '10px 22px', fontSize: 13.5, fontWeight: 500 }}
+              >
+                {isScraping ? 'Extrayendo Métricas...' : config.startButtonLabel}
+              </button>
+            </div>
+            <LogConsole
+              title={config.consoleTitle}
+              logs={logs}
+              emptyMessage="Listo para iniciar. Ingresa/selecciona los perfiles y presiona el botón de extracción."
+            />
+          </div>
+
+          {results.length > 0 && (
+            <div className="kpi-grid">
+              {config.summaryCards(results).map((card, i) => (
+                <KpiCard key={i} label={card.label} value={card.value} color={card.color} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {results.length > 0 && (
+        <div className="card" style={{ padding: 18, background: '#fff' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 500 }}>Métricas Obtenidas</h3>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {selectedCampaignId ? (
+                <button className="btn-red" onClick={handleSyncToDb} disabled={isSavingDb} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', fontSize: 12 }}>
+                  {isSavingDb ? 'Guardando en BD...' : '💾 Guardar en Base de Datos'}
+                </button>
+              ) : (
+                <span style={{ fontSize: 11.5, color: '#AAA', alignSelf: 'center', fontStyle: 'italic', marginRight: 8 }}>
+                  (Selecciona una campaña para guardar en BD)
+                </span>
+              )}
+              <button className="btn-ghost" onClick={downloadCSV} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', fontSize: 12 }}>
+                📥 Exportar a Excel (CSV)
+              </button>
+            </div>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <thead>
+                <tr style={{ background: '#F7F7F5', borderBottom: '0.5px solid #E5E5E2' }}>
+                  {config.tableColumns.map(col => (
+                    <th key={col.key} className="th" style={{ width: col.width }}>{col.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((row, i) => (
+                  <tr key={`${row.author}-${row.url}-${i}`} style={{ borderBottom: '0.5px solid #F0F0EE' }}>
+                    {config.tableColumns.map(col => (
+                      <td
+                        key={col.key}
+                        className="td"
+                        style={col.key === 'description' ? { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } : undefined}
+                      >
+                        {config.renderCell(row, col.key)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
