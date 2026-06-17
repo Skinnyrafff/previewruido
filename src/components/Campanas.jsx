@@ -7,6 +7,7 @@ import {
   TIPOS, TIPO_COLORS, SIZE_RANGES, ESTADOS_INF, ESTADO_INF_COLORS, ESTADO_CAMP_COLORS, PLATAFORMAS,
 } from '../lib/constants'
 import { fmtSeg, fmtMoney, getSize } from '../lib/format'
+import { syncCampaignInfluencerVideoLinks } from '../lib/campaignPostLinks'
 import Avatar from './ui/Avatar'
 import BudgetBar from './ui/BudgetBar'
 
@@ -212,6 +213,12 @@ export default function Campanas() {
           ${ciForm.video_link_tt}, ${ciForm.video_link_ig}
         )
       `
+      await syncCampaignInfluencerVideoLinks({
+        campaignId: currentCamp.id,
+        influencerId: selInf.id,
+        videoLinkTT: ciForm.video_link_tt,
+        videoLinkIG: ciForm.video_link_ig,
+      })
       setModalAddInf(false)
       await fetchCamps()
     } catch (e) { console.error(e) }
@@ -249,6 +256,12 @@ export default function Campanas() {
           video_link_ig = ${editCIForm.video_link_ig}
         WHERE id = ${editCI.ci_id}
       `
+      await syncCampaignInfluencerVideoLinks({
+        campaignId: currentCamp.id,
+        influencerId: editCI.influencer_id,
+        videoLinkTT: editCIForm.video_link_tt,
+        videoLinkIG: editCIForm.video_link_ig,
+      })
       setEditCIModal(false)
       await fetchCamps()
     } catch (e) { console.error(e) }

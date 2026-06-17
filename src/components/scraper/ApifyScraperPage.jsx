@@ -17,8 +17,6 @@ export default function ApifyScraperPage({ config }) {
     selectedCampaignId,
     setSelectedCampaignId,
     selectedRosterProfiles,
-    saveToDb,
-    setSaveToDb,
     manualProfiles,
     setManualProfiles,
     isScraping,
@@ -26,12 +24,14 @@ export default function ApifyScraperPage({ config }) {
     statusText,
     results,
     isSavingDb,
+    isSavingProfiles,
     saveToken,
     toggleRosterProfile,
     selectAllRoster,
     selectNoneRoster,
     handleStartScrape,
     handleSyncToDb,
+    handleSyncProfiles,
     addLog,
     rosterUsernameField,
   } = scraper
@@ -41,7 +41,7 @@ export default function ApifyScraperPage({ config }) {
     const { headers, rows } = config.csvExport(results)
     const filename = `${config.csvFilenamePrefix}_${new Date().toISOString().split('T')[0]}.csv`
     downloadCsv(filename, headers, rows)
-    addLog('Archivo CSV descargado con éxito.')
+    addLog('Archivo CSV descargado con exito.')
   }
 
   return (
@@ -50,7 +50,7 @@ export default function ApifyScraperPage({ config }) {
 
       {config.warningBanner && (
         <div className="warning-banner">
-          <span>⚠️</span>
+          <span>!</span>
           <span>{config.warningBanner}</span>
         </div>
       )}
@@ -59,7 +59,7 @@ export default function ApifyScraperPage({ config }) {
         <div className="scraper-sidebar">
           <div className="card" style={{ padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Configuración de Apify</div>
+              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Configuracion de Apify</div>
               <button className="btn-ghost" style={{ padding: '2px 8px', fontSize: 10.5 }} onClick={() => setShowToken(!showToken)}>
                 {showToken ? 'Ocultar' : 'Ver'}
               </button>
@@ -88,29 +88,23 @@ export default function ApifyScraperPage({ config }) {
           </div>
 
           <div className="card" style={{ padding: 14 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 500, marginBottom: 10 }}>Destino de los Datos</div>
+            <div style={{ fontSize: 12.5, fontWeight: 500, marginBottom: 10 }}>Destino de los datos</div>
             <div className="fg" style={{ marginBottom: 0 }}>
-              <label className="label">Campaña a sincronizar</label>
+              <label className="label">Campana para guardar metricas</label>
               <select className="input" value={selectedCampaignId} onChange={e => setSelectedCampaignId(e.target.value)}>
-                <option value="">No guardar en Base de Datos (Solo reporte local)</option>
+                <option value="">No guardar en campana (solo reporte local)</option>
                 {campaigns.map(c => (
                   <option key={c.id} value={c.id}>{c.nombre} ({c.cliente})</option>
                 ))}
               </select>
+              <div style={{ fontSize: 11.5, color: '#888', marginTop: 8 }}>
+                El boton de guardado en campana usa esta seleccion.
+              </div>
               {selectedCampaignId && (
                 <>
-                  <div className="success-pill">✓ Campaña seleccionada para vinculación.</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
-                    <input
-                      type="checkbox"
-                      id={config.saveCheckboxId}
-                      checked={saveToDb}
-                      onChange={e => setSaveToDb(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <label htmlFor={config.saveCheckboxId} style={{ fontSize: 12, color: '#333', cursor: 'pointer', userSelect: 'none' }}>
-                      Guardar resultados en la Base de Datos
-                    </label>
+                  <div className="success-pill">Campana seleccionada para vinculacion.</div>
+                  <div style={{ fontSize: 12, color: '#333', marginTop: 10 }}>
+                    Guardado automatico al terminar la extraccion: <strong>Siempre activo</strong>
                   </div>
                 </>
               )}
@@ -119,10 +113,10 @@ export default function ApifyScraperPage({ config }) {
 
           <div className="card" style={{ padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Perfiles de Roster ({roster.length})</div>
+              <div style={{ fontSize: 12.5, fontWeight: 500 }}>Perfiles de roster ({roster.length})</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <span className="link-accent" onClick={selectAllRoster}>Todos</span>
-                <span style={{ fontSize: 11, color: '#AAA' }}>·</span>
+                <span style={{ fontSize: 11, color: '#AAA' }}>.</span>
                 <span style={{ fontSize: 11, color: '#666', cursor: 'pointer', userSelect: 'none' }} onClick={selectNoneRoster}>Ninguno</span>
               </div>
             </div>
@@ -142,8 +136,9 @@ export default function ApifyScraperPage({ config }) {
                     <div className="roster-picker__check" style={{
                       borderColor: selected ? '#E8313A' : '#D0D0CC',
                       background: selected ? '#E8313A' : 'transparent',
-                    }}>
-                      {selected ? '✓' : ''}
+                    }}
+                    >
+                      {selected ? 'OK' : ''}
                     </div>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 500 }}>{r.nombre}</span>
@@ -158,7 +153,7 @@ export default function ApifyScraperPage({ config }) {
           <div className="card" style={{ padding: 14 }}>
             <div style={{ fontSize: 12.5, fontWeight: 500, marginBottom: 8 }}>{config.manualProfilesTitle}</div>
             <div className="fg" style={{ marginBottom: 0 }}>
-              <label className="label">Agregar manualmente (uno por línea o por coma)</label>
+              <label className="label">Agregar manualmente (uno por linea o por coma)</label>
               <textarea
                 className="input"
                 rows={3}
@@ -175,7 +170,7 @@ export default function ApifyScraperPage({ config }) {
           <div className="card" style={{ padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div>
-                <h3 style={{ fontSize: 14, fontWeight: 500 }}>Panel de Control</h3>
+                <h3 style={{ fontSize: 14, fontWeight: 500 }}>Panel de control</h3>
                 {isScraping && (
                   <p style={{ fontSize: 12, color: '#E8313A', marginTop: 3, display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span className="pulse-dot" />
@@ -189,13 +184,13 @@ export default function ApifyScraperPage({ config }) {
                 disabled={isScraping}
                 style={{ padding: '10px 22px', fontSize: 13.5, fontWeight: 500 }}
               >
-                {isScraping ? 'Extrayendo Métricas...' : config.startButtonLabel}
+                {isScraping ? 'Extrayendo metricas...' : config.startButtonLabel}
               </button>
             </div>
             <LogConsole
               title={config.consoleTitle}
               logs={logs}
-              emptyMessage="Listo para iniciar. Ingresa/selecciona los perfiles y presiona el botón de extracción."
+              emptyMessage="Listo para iniciar. Ingresa o selecciona perfiles y ejecuta la extraccion."
             />
           </div>
 
@@ -212,19 +207,22 @@ export default function ApifyScraperPage({ config }) {
       {results.length > 0 && (
         <div className="card" style={{ padding: 18, background: '#fff' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 500 }}>Métricas Obtenidas</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 500 }}>Metricas obtenidas</h3>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {selectedCampaignId ? (
-                <button className="btn-red" onClick={handleSyncToDb} disabled={isSavingDb} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', fontSize: 12 }}>
-                  {isSavingDb ? 'Guardando en BD...' : '💾 Guardar en Base de Datos'}
+                <button className="btn-red" onClick={handleSyncToDb} disabled={isSavingDb} style={{ padding: '8px 16px', fontSize: 12 }}>
+                  {isSavingDb ? 'Guardando en campana...' : 'Guardar en campana'}
                 </button>
               ) : (
                 <span style={{ fontSize: 11.5, color: '#AAA', alignSelf: 'center', fontStyle: 'italic', marginRight: 8 }}>
-                  (Selecciona una campaña para guardar en BD)
+                  Selecciona una campana si quieres persistir posts y snapshots alli.
                 </span>
               )}
-              <button className="btn-ghost" onClick={downloadCSV} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', fontSize: 12 }}>
-                📥 Exportar a Excel (CSV)
+              <button className="btn-ghost" onClick={handleSyncProfiles} disabled={isSavingProfiles} style={{ padding: '8px 16px', fontSize: 12 }}>
+                {isSavingProfiles ? 'Guardando perfiles...' : 'Guardar en perfil'}
+              </button>
+              <button className="btn-ghost" onClick={downloadCSV} style={{ padding: '8px 16px', fontSize: 12 }}>
+                Exportar a Excel (CSV)
               </button>
             </div>
           </div>
