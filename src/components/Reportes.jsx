@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import sql from '../lib/db'
 import Modal from './Modal'
 import { fmtNum } from '../lib/format'
@@ -279,7 +279,7 @@ export default function Reportes({ camp, roster }) {
           background: '#fff', border: '0.5px solid #E5E5E2', borderRadius: 12,
           padding: '14px 16px', marginBottom: 20,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 500 }}>Link del reporte</div>
             <span style={{
               fontSize: 11, padding: '2px 9px', borderRadius: 20,
@@ -290,18 +290,18 @@ export default function Reportes({ camp, roster }) {
             </span>
           </div>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
             background: '#F7F7F5', border: '0.5px solid #E5E5E2',
-            borderRadius: 8, padding: '8px 12px', marginBottom: 10,
+            borderRadius: 10, padding: '10px 12px', marginBottom: 10,
           }}>
-            <span style={{ flex: 1, fontSize: 12, color: '#666', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ flex: '1 1 320px', minWidth: 0, fontSize: 12, color: '#666', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {window.location.origin}/?report={reportToken.token}
             </span>
             <button className="btn-ghost" style={{ padding: '5px 12px', fontSize: 12, flexShrink: 0 }} onClick={copyReportLink}>
-              {copied ? '✓ Copiado' : 'Copiar'}
+              {copied ? 'Listo' : 'Copiar'}
             </button>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="btn-ghost" style={{ fontSize: 12 }} onClick={toggleReportToken}>
               {reportToken.activo ? 'Desactivar' : 'Activar'}
             </button>
@@ -313,7 +313,7 @@ export default function Reportes({ camp, roster }) {
               target="_blank" rel="noopener noreferrer"
               style={{ marginLeft: 'auto', fontSize: 12, color: '#E8313A', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}
             >
-              Vista previa ↗
+              Ver enlace ↗
             </a>
           </div>
         </div>
@@ -668,3 +668,5 @@ export default function Reportes({ camp, roster }) {
     </div>
   )
 }
+
+

@@ -1,17 +1,18 @@
 ﻿import { useState, useEffect } from 'react'
 import sql from '../lib/db'
 import { TIPO_COLORS } from '../lib/constants'
-import { fmtSeg, getSizeLabel } from '../lib/format'
+import { fmtSeg, getSizeLabel, normalizePostUrl } from '../lib/format'
 import Avatar from './ui/Avatar'
 
 function ProfileLink({ username, link }) {
-  if (!username) return <span style={{ color: '#CCC', fontSize: 13 }}>â€”</span>
+  const cleanLink = normalizePostUrl(link)
+  if (!username) return <span style={{ color: '#CCC', fontSize: 13 }}>—</span>
   if (link) return (
-    <a href={link} target="_blank" rel="noopener noreferrer"
+    <a href={cleanLink} target="_blank" rel="noopener noreferrer"
       style={{ color: '#E8313A', fontWeight: 500, textDecoration: 'none', fontSize: 13 }}
       onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
       onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-    >{username} <span style={{ fontSize: 10, opacity: 0.6 }}>â†—</span></a>
+    >{username} <span style={{ fontSize: 10, opacity: 0.6 }}>↗</span></a>
   )
   return <span style={{ fontSize: 13, color: '#555', fontWeight: 500 }}>{username}</span>
 }
@@ -63,7 +64,7 @@ export default function VistaCliente({ token }) {
   if (error) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F7F5' }}>
       <div style={{ textAlign: 'center', color: '#AAA' }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>â—ˆ</div>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>◇</div>
         <div style={{ fontSize: 15, fontWeight: 500, color: '#555', marginBottom: 6 }}>
           {error === 'not_found' ? 'Propuesta no encontrada' : error === 'inactive' ? 'Este link ha sido desactivado' : 'Error al cargar'}
         </div>
@@ -139,7 +140,7 @@ export default function VistaCliente({ token }) {
                   <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 180 }}>Influencer</th>
                   {showIG && <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 150 }}>Instagram</th>}
                   {showTT && <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 150 }}>TikTok</th>}
-                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 150 }}>CategorÃ­as</th>
+                  <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 150 }}>Categorías</th>
                   {hasVideoIG && <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 80 }}>Post IG</th>}
                   {hasVideoTT && <th style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10.5, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.08em', color: '#AAA', minWidth: 80 }}>Video TT</th>}
                 </tr>
@@ -185,29 +186,29 @@ export default function VistaCliente({ token }) {
                             const c = TIPO_COLORS[t] || TIPO_COLORS['Otros']
                             return <span key={t} style={{ background: c.bg, color: c.color, padding: '2px 8px', borderRadius: 20, fontSize: 11 }}>{t}</span>
                           })}
-                          {tipos.length === 0 && <span style={{ color: '#CCC', fontSize: 12 }}>â€”</span>}
+                          {tipos.length === 0 && <span style={{ color: '#CCC', fontSize: 12 }}>—</span>}
                         </div>
                       </td>
                       {hasVideoIG && (
                         <td style={{ padding: '13px 16px', verticalAlign: 'middle' }}>
                           {inf.video_link_ig ? (
-                            <a href={inf.video_link_ig} target="_blank" rel="noopener noreferrer"
+                            <a href={normalizePostUrl(inf.video_link_ig)} target="_blank" rel="noopener noreferrer"
                               style={{ color: '#C2185B', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}
                               onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
                               onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                            >Ver â†—</a>
-                          ) : <span style={{ color: '#CCC', fontSize: 12 }}>â€”</span>}
+                            >Ver ↗</a>
+                          ) : <span style={{ color: '#CCC', fontSize: 12 }}>—</span>}
                         </td>
                       )}
                       {hasVideoTT && (
                         <td style={{ padding: '13px 16px', verticalAlign: 'middle' }}>
                           {inf.video_link_tt ? (
-                            <a href={inf.video_link_tt} target="_blank" rel="noopener noreferrer"
+                            <a href={normalizePostUrl(inf.video_link_tt)} target="_blank" rel="noopener noreferrer"
                               style={{ color: '#1A1A1A', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}
                               onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
                               onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                            >Ver â†—</a>
-                          ) : <span style={{ color: '#CCC', fontSize: 12 }}>â€”</span>}
+                            >Ver ↗</a>
+                          ) : <span style={{ color: '#CCC', fontSize: 12 }}>—</span>}
                         </td>
                       )}
                     </tr>
@@ -245,7 +246,7 @@ export default function VistaCliente({ token }) {
         </div>
 
         <div style={{ marginTop: 20, textAlign: 'center', fontSize: 11, color: '#CCC' }}>
-          Propuesta generada por RUIDO LAB â€” Influencer MKT
+          Propuesta generada por RUIDO LAB — Influencer MKT
         </div>
       </div>
     </div>
