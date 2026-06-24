@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import sql from '../lib/db'
 import { TIPO_COLORS } from '../lib/constants'
 import { fmtNum, fmtSeg } from '../lib/format'
@@ -57,7 +57,7 @@ export default function VistaReporte({ token }) {
 
       const campInfo = tokenData[0]
 
-      // Traer posts con métricas e influencers
+      // Traer posts con mÃ©tricas e influencers
       const postsData = await sql`
         SELECT
           p.*,
@@ -121,7 +121,7 @@ export default function VistaReporte({ token }) {
   if (error) return (
     <div style={{ minHeight: '100vh', background: '#F7F7F5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', color: '#AAA' }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>◈</div>
+        <div style={{ fontSize: 32, marginBottom: 12 }}>â—ˆ</div>
         <div style={{ fontSize: 15, fontWeight: 500, color: '#555', marginBottom: 6 }}>
           {error === 'not_found' ? 'Reporte no encontrado' : error === 'inactive' ? 'Este reporte ha sido desactivado' : 'Error al cargar'}
         </div>
@@ -261,7 +261,7 @@ export default function VistaReporte({ token }) {
                           {p.url && (
                             <a href={p.url} target="_blank" rel="noopener noreferrer"
                               style={{ fontSize: 12, color: '#E8313A', textDecoration: 'none', flexShrink: 0 }}>
-                              Ver ↗
+                              Ver â†—
                             </a>
                           )}
                         </div>
@@ -281,7 +281,7 @@ export default function VistaReporte({ token }) {
                 <thead>
                   <tr>
                     <th style={thStyle}>Influencer</th>
-                    <th style={thStyle}>Categorías</th>
+                    <th style={thStyle}>CategorÃ­as</th>
                     <th style={thStyle}>Posts</th>
                     <th style={thStyle}>Views</th>
                     <th style={thStyle}>Likes</th>
@@ -357,13 +357,13 @@ export default function VistaReporte({ token }) {
                         }}>{p.plataforma}</span>
                       </td>
                       <td style={{ ...tdStyle, fontSize: 12, color: '#888' }}>
-                        {p.fecha_publicacion ? new Date(p.fecha_publicacion).toLocaleDateString('es-CL') : '—'}
+                        {p.fecha_publicacion ? new Date(p.fecha_publicacion).toLocaleDateString('es-CL') : 'â€”'}
                       </td>
-                      <td style={{ ...tdStyle, fontWeight: 500 }}>{p.latest ? fmtNum(p.latest.views) : <span style={{ color: '#CCC' }}>—</span>}</td>
-                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.likes) : <span style={{ color: '#CCC' }}>—</span>}</td>
-                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.comentarios) : <span style={{ color: '#CCC' }}>—</span>}</td>
-                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.shares) : <span style={{ color: '#CCC' }}>—</span>}</td>
-                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.saves) : <span style={{ color: '#CCC' }}>—</span>}</td>
+                      <td style={{ ...tdStyle, fontWeight: 500 }}>{p.latest ? fmtNum(p.latest.views) : <span style={{ color: '#CCC' }}>â€”</span>}</td>
+                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.likes) : <span style={{ color: '#CCC' }}>â€”</span>}</td>
+                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.comentarios) : <span style={{ color: '#CCC' }}>â€”</span>}</td>
+                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.shares) : <span style={{ color: '#CCC' }}>â€”</span>}</td>
+                      <td style={tdStyle}>{p.latest ? fmtNum(p.latest.saves) : <span style={{ color: '#CCC' }}>â€”</span>}</td>
                       <td style={tdStyle}>
                         {p.latest ? (
                           <span style={{
@@ -371,7 +371,7 @@ export default function VistaReporte({ token }) {
                             background: p.latest.engagement_rate >= 3 ? '#EAF3DE' : p.latest.engagement_rate >= 1 ? '#FAEEDA' : '#F1EFE8',
                             color: p.latest.engagement_rate >= 3 ? '#27500A' : p.latest.engagement_rate >= 1 ? '#633806' : '#5F5E5A',
                           }}>{p.latest.engagement_rate}%</span>
-                        ) : <span style={{ color: '#CCC', fontSize: 12 }}>—</span>}
+                        ) : <span style={{ color: '#CCC', fontSize: 12 }}>â€”</span>}
                       </td>
                       <td style={tdStyle}>
                         {p.url ? (
@@ -379,8 +379,8 @@ export default function VistaReporte({ token }) {
                             style={{ color: '#E8313A', fontSize: 13, textDecoration: 'none', fontWeight: 500 }}
                             onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
                             onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
-                          >Ver ↗</a>
-                        ) : <span style={{ color: '#CCC' }}>—</span>}
+                          >Ver â†—</a>
+                        ) : <span style={{ color: '#CCC' }}>â€”</span>}
                       </td>
                     </tr>
                   ))}
@@ -391,9 +391,11 @@ export default function VistaReporte({ token }) {
         )}
 
         <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: '#CCC' }}>
-          Reporte generado por RUIDO LAB — Influencer MKT
+          Reporte generado por RUIDO LAB â€” Influencer MKT
         </div>
       </div>
     </div>
   )
 }
+
+

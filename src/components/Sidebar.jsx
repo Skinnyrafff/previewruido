@@ -1,10 +1,8 @@
-export default function Sidebar({ page, setPage, onLogout }) {
+﻿export default function Sidebar({ page, setPage, onLogout }) {
   const items = [
-    { id: 'dashboard', label: 'Dashboard', icon: '◈' },
-    { id: 'roster', label: 'Roster', icon: '◉' },
-    { id: 'campanas', label: 'Campañas', icon: '◎' },
-    { id: 'scraper-tiktok', label: 'Scraper TikTok', icon: '⚡' },
-    { id: 'scraper-instagram', label: 'Scraper Instagram', icon: '📸' },
+    { id: 'dashboard', label: 'Dashboard', icon: 'D' },
+    { id: 'roster', label: 'Roster', icon: 'R' },
+    { id: 'campanas', label: 'Campañas', icon: 'C' },
   ]
 
   return (
@@ -12,7 +10,6 @@ export default function Sidebar({ page, setPage, onLogout }) {
       width: 208, background: '#fff', borderRight: '0.5px solid #E5E5E2',
       display: 'flex', flexDirection: 'column', flexShrink: 0, minHeight: '100vh',
     }}>
-      {/* Logo */}
       <div style={{ padding: '20px 16px', borderBottom: '0.5px solid #E5E5E2', display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 28, height: 28, background: '#E8313A', borderRadius: 7,
@@ -25,7 +22,6 @@ export default function Sidebar({ page, setPage, onLogout }) {
         </div>
       </div>
 
-      {/* Nav */}
       <nav style={{ padding: '8px 0', flex: 1 }}>
         {items.map(item => (
           <div
@@ -42,13 +38,17 @@ export default function Sidebar({ page, setPage, onLogout }) {
             onMouseEnter={e => { if (page !== item.id) e.currentTarget.style.background = '#F7F7F5' }}
             onMouseLeave={e => { if (page !== item.id) e.currentTarget.style.background = 'transparent' }}
           >
-            <span style={{ fontSize: 15, width: 16, textAlign: 'center' }}>{item.icon}</span>
+            <span style={{
+              fontSize: 11, width: 16, height: 16, textAlign: 'center',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 999, background: page === item.id ? '#E8313A' : '#ECECE8',
+              color: page === item.id ? '#fff' : '#666', fontWeight: 700,
+            }}>{item.icon}</span>
             {item.label}
           </div>
         ))}
       </nav>
 
-      {/* Logout */}
       <div style={{ padding: '12px 8px', borderTop: '0.5px solid #E5E5E2' }}>
         <div
           onClick={onLogout}

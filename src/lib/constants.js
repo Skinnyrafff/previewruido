@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   auth: 'ruido_auth',
   apifyToken: 'ruido_apify_token',
+  apifyTokenRotationIndex: 'ruido_apify_token_rotation_index',
 }
 
 export const LOCALE = 'es-CL'

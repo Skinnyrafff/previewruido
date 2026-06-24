@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import sql from '../lib/db'
 import { STORAGE_KEYS, LOCALE } from '../lib/constants'
-import { startActorRun, pollActorRun, fetchDatasetItems } from '../lib/apify'
+import { startActorRunWithRotation, pollActorRun, fetchDatasetItems, parseApifyTokens } from '../lib/apify'
 import { mergeProfileLists } from '../lib/scraper/profiles'
 import { saveScrapedPosts } from '../lib/scraper/savePosts'
 import { saveScrapedProfiles } from '../lib/scraper/saveProfiles'
@@ -32,11 +32,16 @@ export function useApifyScraper(config) {
   const [results, setResults] = useState([])
   const [isSavingDb, setIsSavingDb] = useState(false)
   const [isSavingProfiles, setIsSavingProfiles] = useState(false)
+  const [activeRunToken, setActiveRunToken] = useState('')
 
   const pollCleanupRef = useRef(null)
 
   useEffect(() => {
-    const savedToken = localStorage.getItem(STORAGE_KEYS.apifyToken) || import.meta.env.VITE_APIFY_TOKEN || ''
+    const savedToken =
+      localStorage.getItem(STORAGE_KEYS.apifyToken) ||
+      import.meta.env.VITE_APIFY_TOKENS ||
+      import.meta.env.VITE_APIFY_TOKEN ||
+      ''
     setApifyToken(savedToken)
     fetchDbData()
     return () => {
@@ -120,8 +125,9 @@ export function useApifyScraper(config) {
       alert(noProfilesAlert)
       return
     }
-    if (!apifyToken.trim()) {
-      alert('Por favor ingresa un token de API de Apify.')
+    const configuredTokens = parseApifyTokens(apifyToken)
+    if (configuredTokens.length === 0) {
+      alert('Por favor ingresa al menos un token de API de Apify.')
       return
     }
 
@@ -131,42 +137,47 @@ export function useApifyScraper(config) {
     setResults([])
     setIsScraping(true)
     setStatusText('Iniciando...')
+    setActiveRunToken('')
     addLog(`Iniciando extracción para ${profiles.length} perfiles: ${profiles.join(', ')}`)
     addLog(`Límite por perfil: ${limit} ${limitUnit}.`)
 
     try {
       addLog('Llamando a la API de Apify para iniciar el scraper...')
-      const { runId, datasetId } = await startActorRun(actorId, apifyToken, buildRunBody(profiles, limit))
+      const { runId, datasetId, tokenUsed, tokenIndex } = await startActorRunWithRotation(actorId, apifyToken, buildRunBody(profiles, limit))
+      setActiveRunToken(tokenUsed)
+      if (configuredTokens.length > 1) addLog(`Token rotado para esta corrida: #${tokenIndex + 1}.`)
       addLog(`Ejecución iniciada con éxito. Run ID: ${runId}`)
 
       pollCleanupRef.current = pollActorRun({
         runId,
         datasetId,
-        token: apifyToken,
+        token: tokenUsed,
         onStatus: status => {
           setStatusText(status)
           addLog(`Estado de la ejecución: ${status}...`)
         },
         onSuccess: () => {
           addLog('¡Ejecución de Apify exitosa! Descargando los datos recolectados...')
-          fetchDataset(datasetId)
+          fetchDataset(datasetId, tokenUsed)
         },
         onError: error => {
           addLog(`ERROR durante polling: ${error.message}`)
           setIsScraping(false)
           setStatusText('Error')
+          setActiveRunToken('')
         },
       })
     } catch (error) {
       addLog(`ERROR: ${error.message}`)
       setIsScraping(false)
       setStatusText('Error')
+      setActiveRunToken('')
     }
   }
 
-  async function fetchDataset(datasetId) {
+  async function fetchDataset(datasetId, tokenOverride) {
     try {
-      const items = await fetchDatasetItems(datasetId, apifyToken)
+      const items = await fetchDatasetItems(datasetId, tokenOverride || activeRunToken)
       addLog(`Descargados ${items.length} registros desde Apify. Procesando datos...`)
 
       const parsedItems = parseItems(items)
@@ -181,10 +192,12 @@ export function useApifyScraper(config) {
 
       setIsScraping(false)
       setStatusText('Completado')
+      setActiveRunToken('')
     } catch (error) {
       addLog(`ERROR procesando datos: ${error.message}`)
       setIsScraping(false)
       setStatusText('Error')
+      setActiveRunToken('')
     }
   }
 

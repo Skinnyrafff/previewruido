@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { STORAGE_KEYS } from '../lib/constants'
 
 export default function Login({ onLogin }) {
@@ -33,7 +33,6 @@ export default function Login({ onLogin }) {
         borderRadius: 16, padding: '36px 32px', width: '100%', maxWidth: 360,
         boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
       }}>
-        {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
           <div style={{
             width: 32, height: 32, background: '#E8313A', borderRadius: 8,

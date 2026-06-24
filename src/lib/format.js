@@ -41,3 +41,22 @@ export function parsePublishDate(rawTime) {
 export function normalizeUsername(value) {
   return String(value || '').replace(/^@/, '').toLowerCase().trim()
 }
+
+export function normalizePostUrl(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+
+  try {
+    const url = new URL(raw)
+    url.hash = ''
+    url.search = ''
+    url.hostname = url.hostname.toLowerCase()
+
+    if (url.hostname === 'm.instagram.com') url.hostname = 'www.instagram.com'
+    if (url.hostname === 'instagram.com') url.hostname = 'www.instagram.com'
+
+    return url.toString().replace(/\/$/, '')
+  } catch {
+    return raw.replace(/[?#].*$/, '').replace(/\/$/, '').toLowerCase()
+  }
+}
