@@ -42,12 +42,19 @@ export function normalizeUsername(value) {
   return String(value || '').replace(/^@/, '').toLowerCase().trim()
 }
 
+export function sanitizeUrlInput(value) {
+  return String(value || '')
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
+    .replace(/\s+/g, '')
+    .trim()
+}
+
 export function normalizePostUrl(value) {
-  const raw = String(value || '').trim()
+  const raw = sanitizeUrlInput(value)
   if (!raw) return ''
 
   try {
-    const url = new URL(raw)
+    const url = new URL(ensureUrlProtocol(raw))
     url.hash = ''
     url.search = ''
     url.hostname = url.hostname.toLowerCase()
@@ -58,5 +65,31 @@ export function normalizePostUrl(value) {
     return url.toString().replace(/\/$/, '')
   } catch {
     return raw.replace(/[?#].*$/, '').replace(/\/$/, '').toLowerCase()
+  }
+}
+
+function ensureUrlProtocol(value) {
+  const raw = sanitizeUrlInput(value)
+  if (!raw) return ''
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+}
+
+export function isTikTokUrl(value) {
+  try {
+    const url = new URL(ensureUrlProtocol(value))
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, '')
+    return hostname === 'tiktok.com' || hostname.endsWith('.tiktok.com')
+  } catch {
+    return false
+  }
+}
+
+export function isInstagramUrl(value) {
+  try {
+    const url = new URL(ensureUrlProtocol(value))
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '')
+    return hostname === 'instagram.com' || hostname.endsWith('.instagram.com')
+  } catch {
+    return false
   }
 }

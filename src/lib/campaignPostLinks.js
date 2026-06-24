@@ -1,8 +1,8 @@
 import sql from './db.js'
-import { normalizePostUrl } from './format.js'
+import { normalizePostUrl, sanitizeUrlInput } from './format.js'
 
 async function ensureCampaignPost({ campaignId, influencerId, plataforma, url }) {
-  const cleanUrl = String(url || '').trim()
+  const cleanUrl = sanitizeUrlInput(url)
   if (!cleanUrl) return false
   const normalizedTarget = normalizePostUrl(cleanUrl)
 

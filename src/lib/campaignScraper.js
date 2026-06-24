@@ -4,7 +4,7 @@ import { startActorRunWithRotation, waitForActorRun, fetchDatasetItems, parseApi
 import { parseTikTokItems } from './scraper/tiktok.js'
 import { parseInstagramItems } from './scraper/instagram.js'
 import { calcEngagementRate, calcTikTokEngagement, calcInstagramEngagement } from './engagement.js'
-import { normalizePostUrl } from './format.js'
+import { normalizePostUrl, isInstagramUrl, isTikTokUrl } from './format.js'
 import { syncCampaignInfluencerVideoLinks } from './campaignPostLinks.js'
 
 const PLATFORM_CONFIG = {
@@ -114,7 +114,19 @@ export async function scrapeCampaignMetrics({ camp, token, addLog }) {
     if (platformTargets.length === 0) continue
 
     const config = PLATFORM_CONFIG[platform]
-    const urls = platformTargets.map(target => target.url)
+    const validTargets = platformTargets.filter(target => isValidPlatformUrl(platform, target.url))
+    const invalidTargets = platformTargets.filter(target => !isValidPlatformUrl(platform, target.url))
+
+    for (const target of invalidTargets) {
+      addLog(`${platform}: link omitido para ${target.influencerName} por formato no válido.`)
+    }
+
+    if (validTargets.length === 0) {
+      addLog(`${platform}: sin links válidos para scrapear.`)
+      continue
+    }
+
+    const urls = validTargets.map(target => normalizePostUrl(target.url))
 
     addLog(`Iniciando scraping ${platform}: ${urls.length} link${urls.length === 1 ? '' : 's'}.`)
     const { runId, datasetId, tokenUsed, tokenIndex } = await startActorRunWithRotation(config.actorId, token, config.buildRunBody(urls))
@@ -135,7 +147,7 @@ export async function scrapeCampaignMetrics({ camp, token, addLog }) {
       campaignId: camp.id,
       platform,
       items: parsedItems,
-      targets: platformTargets,
+      targets: validTargets,
       addLog,
     })
 
@@ -143,6 +155,12 @@ export async function scrapeCampaignMetrics({ camp, token, addLog }) {
   }
 
   return { totalSaved, totalTargets: targets.length }
+}
+
+function isValidPlatformUrl(platform, url) {
+  if (platform === 'TikTok') return isTikTokUrl(url)
+  if (platform === 'Instagram') return isInstagramUrl(url)
+  return false
 }
 
 async function saveCampaignMetricsByUrl({ campaignId, platform, items, targets, addLog }) {
