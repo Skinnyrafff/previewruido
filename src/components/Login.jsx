@@ -13,7 +13,8 @@ export default function Login({ onLogin }) {
 
     setTimeout(() => {
       if (password === import.meta.env.VITE_APP_PASSWORD) {
-        localStorage.setItem(STORAGE_KEYS.auth, 'true')
+        sessionStorage.setItem(STORAGE_KEYS.auth, 'true')
+        localStorage.removeItem(STORAGE_KEYS.auth)
         onLogin()
       } else {
         setError(true)

@@ -11,10 +11,13 @@ import InstagramScraper from './components/InstagramScraper'
 import './index.css'
 
 import { STORAGE_KEYS } from './lib/constants'
-const isDev = import.meta.env.DEV
+
+function hasActiveSession() {
+  return sessionStorage.getItem(STORAGE_KEYS.auth) === 'true'
+}
 
 export default function App() {
-  const [auth, setAuth] = useState(isDev)
+  const [auth, setAuth] = useState(false)
   const [page, setPage] = useState('dashboard')
   const [publicToken, setPublicToken] = useState(null)
   const [reportToken, setReportToken] = useState(null)
@@ -25,12 +28,12 @@ export default function App() {
     const report = params.get('report')
     if (token) { setPublicToken(token); return }
     if (report) { setReportToken(report); return }
-    if (isDev) { setAuth(true); return }
-    const saved = localStorage.getItem(STORAGE_KEYS.auth)
-    if (saved === 'true') setAuth(true)
+    localStorage.removeItem(STORAGE_KEYS.auth)
+    if (hasActiveSession()) setAuth(true)
   }, [])
 
   function handleLogout() {
+    sessionStorage.removeItem(STORAGE_KEYS.auth)
     localStorage.removeItem(STORAGE_KEYS.auth)
     setAuth(false)
   }
