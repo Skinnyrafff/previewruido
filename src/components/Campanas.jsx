@@ -468,7 +468,7 @@ export default function Campanas() {
             onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
             onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
           >
-            <span style={{ fontSize: 10, background: '#F0F0EE', padding: '1px 5px', borderRadius: 4 }}>TT</span> Ver ?
+            <span style={{ fontSize: 10, background: '#F0F0EE', padding: '1px 5px', borderRadius: 4 }}>TT</span> Ver ↗
           </a>
         )}
         {showIG && hasIG && (
@@ -477,7 +477,7 @@ export default function Campanas() {
             onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
             onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
           >
-            <span style={{ fontSize: 10, background: '#FEF0FB', color: '#6B1560', padding: '1px 5px', borderRadius: 4 }}>IG</span> Ver ?
+            <span style={{ fontSize: 10, background: '#FEF0FB', color: '#6B1560', padding: '1px 5px', borderRadius: 4 }}>IG</span> Ver ↗
           </a>
         )}
       </div>
@@ -560,7 +560,7 @@ export default function Campanas() {
                 <div style={{ minWidth: 240, flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Métricas de campaña</div>
                   <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
-                    El sistema tomarÃ¡ solo los links cargados aquÃ­ y actualizarÃ¡ Reportes automÃ¡ticamente.
+                    El sistema tomará solo los links cargados aquí y actualizará Reportes automáticamente.
                   </div>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                     <div style={{ background: '#F7F7F5', border: '0.5px solid #E5E5E2', borderRadius: 10, padding: '8px 10px', minWidth: 84 }}>
@@ -590,7 +590,7 @@ export default function Campanas() {
                       disabled={scrapingCamp || campaignScrapeTargets.length === 0 || isCooldownActive}
                       style={{ padding: '12px 18px', fontSize: 13, fontWeight: 500, minWidth: 190 }}
                     >
-                      {scrapingCamp ? 'Actualizando mÃ©tricas...' : isCooldownActive ? 'Espera para volver a scrapear' : 'Actualizar mÃ©tricas'}
+                      {scrapingCamp ? 'Actualizando métricas...' : isCooldownActive ? 'Espera para volver a scrapear' : 'Actualizar métricas'}
                     </button>
                     {isCooldownActive && (
                       <div style={{ fontSize: 11.5, color: '#888', fontVariantNumeric: 'tabular-nums' }}>
@@ -681,7 +681,7 @@ export default function Campanas() {
                             {!isReadOnly && (
                               <td className="td">
                                 <div style={{ display: 'flex', gap: 4 }}>
-                                  <button className="btn-icon" onClick={() => openEditCI(inf)}>âœŽ</button>
+                                  <button className="btn-icon" onClick={() => openEditCI(inf)}>✎</button>
                                   <button className="btn-icon btn-icon-danger" onClick={() => setDeleteCI(inf.ci_id)}>×</button>
                                 </div>
                               </td>
